@@ -21,6 +21,7 @@ The main logic for Felix.
 """
 
 # Monkey-patch before we do anything else...
+import datetime
 from gevent import monkey
 monkey.patch_all()
 
@@ -46,6 +47,28 @@ from calico.felix.endpoint import EndpointManager
 from calico.felix.ipsets import IpsetManager, IpsetActor, HOSTS_IPSET_V4
 from calico.felix.masq import MasqueradeManager
 from calico.felix.fetcd import EtcdAPI
+
+import GreenletProfiler
+from GreenletProfiler import _vendorized_yappi
+
+def start_profiling(builtins=False, profile_threads=True):
+    """Starts profiling all threads and all greenlets.
+
+    This function can be called from any thread at any time.
+    Resumes profiling if stop() was called previously.
+
+    * `builtins`: Profile builtin functions used by standart Python modules.
+    * `profile_threads`: Profile all threads if ``True``, else profile only the
+      calling thread.
+    """
+    # TODO: what about builtins False or profile_threads False?
+    _vendorized_yappi.yappi.set_context_id_callback(common.greenlet_id)
+
+    _vendorized_yappi.yappi.set_context_name_callback(
+        lambda: gevent.getcurrent().__class__.__name__ or '')
+
+    _vendorized_yappi.yappi.start(builtins, profile_threads)
+
 
 _log = logging.getLogger(__name__)
 
@@ -191,6 +214,13 @@ def _main_greenlet(config):
         raise
 
 
+def dump_profiling_data():
+    stats = GreenletProfiler.get_func_stats()
+    stats.print_all()
+    stats.save("/var/log/calico/felix-%s.callgrind" %
+               datetime.datetime.now().isoformat(), type="callgrind")
+
+
 def main():
     # Initialise the logging with default parameters.
     common.default_logging()
@@ -222,6 +252,10 @@ def main():
         raise
 
     _log.info("Felix initializing")
+    GreenletProfiler.set_clock_type("cpu")
+    start_profiling()
+    for ii in xrange(60):
+        gevent.spawn_later(60 * ii, dump_profiling_data)
 
     try:
         gevent.spawn(_main_greenlet, config).join()  # Should never return

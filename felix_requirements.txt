@@ -3,4 +3,4 @@ greenlet
 netaddr
 python-etcd>=0.3.3-calico-2
 posix-spawn
-
+GreenletProfiler
