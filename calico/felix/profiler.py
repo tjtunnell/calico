@@ -21,6 +21,7 @@ Utilities for profiling CPU usage etc.
 
 import logging
 import signal
+import gevent
 
 _log = logging.getLogger(__name__)
 
@@ -30,6 +31,18 @@ def bind_profiler_to_signal(signal_number=signal.SIGUSR2):
         import gevent_profiler
     except ImportError:
         _log.info("Profiling not available, gevent_profiler not installed.")
+        try:
+            gevent.signal(signal_number, do_nothing)
+        except AttributeError:
+            _log.warning("Unable to install no-op SIGUSR2 handler")
+            pass
     else:
         _log.info("Profiling enabled, attached to signal %s", signal_number)
+        gevent_profiler.set_summary_output("/tmp/felix-profiling-summary.txt")
+        gevent_profiler.set_stats_output("/tmp/felix-profiling-stats.txt")
+        gevent_profiler.set_trace_output(None)
         gevent_profiler.attach_on_signal(signum=signal_number, duration=60)
+
+
+def do_nothing(*args, **kwargs):
+    _log.info("SIGUSR2 received but gevent_profiler not available.")
