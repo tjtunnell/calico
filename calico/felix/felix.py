@@ -21,6 +21,9 @@ The main logic for Felix.
 """
 # Monkey-patch before we do anything else...
 from gevent import monkey
+
+from calico.felix.profiler import bind_profiler_to_signal
+
 monkey.patch_all()
 
 import functools
@@ -182,6 +185,8 @@ def _main_greenlet(config):
             # It doesn't matter too much if we fail to do this.
             _log.warning("Unable to install diag dump handler")
             pass
+        # Register a SIGUSR2 handler to dump profiling data (if avaiable).
+        bind_profiler_to_signal(signal.SIGUSR2)
 
         # Wait for something to fail.
         _log.info("All top-level actors started, waiting on failures...")
