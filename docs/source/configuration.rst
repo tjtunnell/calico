@@ -77,7 +77,7 @@ The full list of parameters which can be set is as follows.
 | Setting                          | Default                        | Meaning                                                                                   |
 +==================================+================================+===========================================================================================+
 | EtcdAddr                         | localhost:4001                 | The location (IP / hostname and port) of the etcd node or proxy that Felix should connect |
-|                                  |                                | to.                                                                                       |
+|                                  |                                | to.  Note: this value cannot be set through etcd.                                         |
 +----------------------------------+--------------------------------+-------------------------------------------------------------------------------------------+
 | EtcdScheme                       | http                           | The protocol type (http or https) of the etcd node or proxy that Felix connects to.       |
 +----------------------------------+--------------------------------+-------------------------------------------------------------------------------------------+
@@ -94,7 +94,8 @@ The full list of parameters which can be set is as follows.
 |                                  |                                | processed) or "ACCEPT" (which immediately accepts packets).                               |
 +----------------------------------+--------------------------------+-------------------------------------------------------------------------------------------+
 | FelixHostname                    | socket.gethostname()           | The hostname Felix reports to the plugin. Should be used if the hostname Felix            |
-|                                  |                                | autodetects is incorrect or does not match what the plugin will expect.                   |
+|                                  |                                | autodetects is incorrect or does not match what the plugin will expect.  Note: this value |
+|                                  |                                | cannot be set through etcd.                                                               |
 +----------------------------------+--------------------------------+-------------------------------------------------------------------------------------------+
 | MetadataAddr                     | 127.0.0.1                      | The IP address or domain name of the server that can answer VM queries for cloud-init     |
 |                                  |                                | metadata. In OpenStack, this corresponds to the machine running nova-api (or in Ubuntu,   |
